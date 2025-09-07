@@ -20,8 +20,10 @@ import axios from "axios"
 import { useRouter } from 'next/navigation'
 import { FormFieldType } from "./PatientForm"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { GenderOptions } from "@/constants"
+import { Doctors, GenderOptions } from "@/constants"
 import { Label } from "../ui/label"
+import { SelectItem } from "../ui/select"
+import Image from "next/image"
 
 
 
@@ -168,8 +170,43 @@ const RegisterForm = ()=> {
               </FormControl>
         )}
         />
+        </div>
 
 
+        <div className="flex flex-col gap-6 xl:flex-row">
+           <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "address"
+            label = "Address"
+            placeholder = "Enter address"
+          />
+
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "occupation"
+            label = "Occupation"
+            placeholder = "Software Engineer"
+          />
+        </div>
+
+         <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "emergencyContactName"
+            label = "Emergency Contact Name"
+            placeholder = "Guardian's name"
+          />
+
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.PHONE_INPUT}
+            name = "emergencyContactPhone"
+            label = "Emergency Phone number"
+            placeholder = "(+91) 1234567890"
+          />
 
         </div>
 
@@ -179,22 +216,81 @@ const RegisterForm = ()=> {
             </div>
         </section>
 
-        <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
             fieldType = {FormFieldType.SELECT}
             name = "primaryPhysician"
             label = "Primary care physician"
             placeholder = "Select a physician"
-        />
+        >
+          {Doctors.map((x)=>(
+            <SelectItem key={x.name} value={x.name}>
+              <div className="flex cursor-pointer items-center">
+                <Image
+                  src={x.image}
+                  height={32}
+                  width={32}
+                  alt = {x.name}
+                  className="rounded-full border border-dark-500"
+                />
+                <p>{x.name}</p>
+              </div>
+            </SelectItem>
+          ))}
+        </CustomFormField>
+      
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "insuranceProvider"
+            label = "Insurance Provider"
+            placeholder = "Policy Bazaar"
+          />
+
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "insurancePolicyNumber"
+            label = "Insurance policy number"
+            placeholder = "ABC1234456"
+          />
         </div>
 
         <div className="flex flex-col gap-6 xl:flex-row">
-          
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.TEXTAREA}
+            name = "allergies"
+            label = "Allergies (if any)"
+            placeholder = "Milk, Peanuts, Pollen, ..."
+          />
+
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.TEXTAREA}
+            name = "currentMedication"
+            label = "Current Medication (if any)"
+            placeholder="Eg. Paracetamol"
+          />
         </div>
 
-        <div className="flex flex-col gap-6 xl:flex-row">
-          
+          <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.TEXTAREA}
+            name = "familyMedicalHistory"
+            label = "Family Medical History (if any)"
+            placeholder = "Enter Medical History"
+          />
+
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.TEXTAREA}
+            name = "pastMedicalHistory"
+            label = "Past Medical History (if any)"
+            placeholder = "Enter Medical History"
+          />
         </div>
 
         <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>

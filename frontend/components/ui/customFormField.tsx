@@ -21,6 +21,9 @@ import { FormFieldType } from '../forms/PatientForm'
 import Image from 'next/image'
 
 import calenderIcon from "@/public/assets/icons/calendar.svg"
+import { Select, SelectContent, SelectTrigger, SelectValue } from './select';
+import { Textarea } from './textarea';
+import { fi } from 'zod/v4/locales';
 
 interface Customprops {
     control : Control<any>,
@@ -101,7 +104,37 @@ const RenderInput = ({field,props}:{field :any ; props:Customprops})=>{
         case FormFieldType.SKELETON :
             return props.renderSkeleton ? props.renderSkeleton(field) : null
             
-        default :
+        case FormFieldType.SELECT :
+            return(
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl >
+                      <SelectTrigger className='shad-select-trigger'>
+                      <SelectValue placeholder ={props.placeholder}/>  
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className='shad-select-content'>
+                        {props.children}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+            )
+        
+        case FormFieldType.TEXTAREA :
+            return(
+                <FormControl>
+                   <Textarea
+                    placeholder={props.placeholder}
+                    {...field}
+                    className='shad-textArea'
+                    disabled = {props.disabled}
+                   />
+                </FormControl>
+            )
+            default :
             break;
     }
 }
