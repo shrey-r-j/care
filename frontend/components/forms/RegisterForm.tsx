@@ -1,0 +1,206 @@
+"use client"
+import userIcon from "@/public/assets/icons/user.svg"
+import emailIcon from "@/public/assets/icons/email.svg"
+
+
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import {UserFormValidation} from "@/lib/validation"
+
+import {
+  Form,
+  FormControl
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import CustomFormField , {Customprops} from "../ui/customFormField"
+import SubmitButton from "../SubmitButton"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { useRouter } from 'next/navigation'
+import { FormFieldType } from "./PatientForm"
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
+import { GenderOptions } from "@/constants"
+import { Label } from "../ui/label"
+
+
+
+const RegisterForm = ()=> {
+  // 1. Define your form.
+    const [isLoading,setisLoading] = useState(false)
+    const router = useRouter()
+    const [User,setUser] = useState("");
+    useEffect(()=>{
+        const fetchDetails = async()=>{
+            const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Token not found. Please log in.");
+        return;
+      }
+      try {
+        const response = await axios.get("http://localhost:3000/api/user/getUser", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setUser(response.data.user);
+        console.log(User);
+      } catch (error:any) {
+        console.error("Error fetching club details:", error.response?.data?.message || error.message);
+      }
+        }
+        fetchDetails();
+    },[])
+  const form = useForm<z.infer<typeof UserFormValidation>>({
+    resolver: zodResolver(UserFormValidation),
+    defaultValues: {
+      name: "",
+      email : "",
+      phone : ""
+    },
+  })
+
+  // 2. Define a submit handler.
+  async function onSubmit({name,email,phone}: z.infer<typeof UserFormValidation>) {
+    setisLoading(true);
+     try{
+        const userData = {
+            name,
+            email,
+            phone
+        }
+        const res = await axios.post("http://localhost:3000/api/user/create",userData);
+        console.log(res.data);
+        form.reset();
+        if(res){
+            router.push('/patients/registration');
+            return alert("User created");
+        }
+    }
+    catch(error){
+        console.log(error)
+    }finally {
+  setisLoading(false);
+}
+  }
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12 flex-1">
+        <section className="space-y-4">
+            <h1 className="header">Welcome 👋</h1>
+            <p className="text-dark-700">Let us know more about yourself</p>
+        </section>
+
+        <section className="space-y-6">
+            <div className="mb-9 space-y-1">
+            <h2 className="sub-header">Personal Information</h2>
+            </div>
+        </section>
+
+        <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "name"
+            label = "Full name"
+            placeholder = "Shrey Jagtap"
+            iconSrc = {userIcon}
+            iconAlt = "user"
+        />
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.INPUT}
+            name = "email"
+            label = "Email"
+            placeholder = "sj@gmail.com"
+            iconSrc = {emailIcon}
+            iconAlt = "user"
+        />
+
+        <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.PHONE_INPUT}
+            name = "phone"
+            label = "Phone number"
+            placeholder = "(+91) 1234567890"
+        />
+        </div>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.DATE_PICKER}
+            name = "birthDate"
+            label = "DOB"
+            placeholder = "sj@gmail.com"
+            iconSrc = {emailIcon}
+            iconAlt = "user"
+        />
+
+        <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.SKELETON}
+            name = "gender"
+            label = "Gender"
+            renderSkeleton={(field)=>(
+              <FormControl>
+                <RadioGroup 
+                  className="flex h-11 gap-6 xl:justify-between"
+                  onValueChange={field.onChange}
+                  defaultValue = {field.value}
+                >
+                  {GenderOptions.map((x,i)=>(
+                    <div key={x+i} className="radio-group">
+                      <RadioGroupItem
+                        value ={x}
+                        id = {x}
+                      />
+                        <Label
+                          htmlFor={x}
+                          className="cursor-pointer"
+                        >
+                          {x}
+                        </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+        )}
+        />
+
+
+
+        </div>
+
+        <section className="space-y-6">
+            <div className="mb-9 space-y-1">
+            <h2 className="sub-header">Medical Information</h2>
+            </div>
+        </section>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            control={form.control}
+            fieldType = {FormFieldType.SELECT}
+            name = "primaryPhysician"
+            label = "Primary care physician"
+            placeholder = "Select a physician"
+        />
+        </div>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          
+        </div>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          
+        </div>
+
+        <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
+      </form>
+    </Form>
+  )
+}
+
+export default RegisterForm
