@@ -24,6 +24,7 @@ import calenderIcon from "@/public/assets/icons/calendar.svg"
 import { Select, SelectContent, SelectTrigger, SelectValue } from './select';
 import { Textarea } from './textarea';
 import { fi } from 'zod/v4/locales';
+import { Checkbox } from './checkbox';
 
 interface Customprops {
     control : Control<any>,
@@ -132,6 +133,22 @@ const RenderInput = ({field,props}:{field :any ; props:Customprops})=>{
                     className='shad-textArea'
                     disabled = {props.disabled}
                    />
+                </FormControl>
+            )
+
+        case FormFieldType.CHECKBOX :
+            return(
+                <FormControl>
+                    <div className='flex items-center gap-4'>
+                        <Checkbox
+                            id = {props.name}
+                            checked = {field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                        <label htmlFor={props.name} className='checkbox-label'>
+                            {props.label}
+                        </label>
+                    </div>
                 </FormControl>
             )
             default :
