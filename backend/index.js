@@ -3,17 +3,24 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv"
 import userRoutes from "./routes/user.js"
+import uploadRoutes from "./routes/uploadRoute.js"
+import path from "path";
+
 
 dotenv.config()
 
 const app = express();
-const port = 3000 || process.env.port;
+const port = 5000 || process.env.port;
 
 app.use(cors())
 app.use(express.json())
 app.use('/api/user',userRoutes)
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/api/upload", uploadRoutes);
+
 const connectDB = async () => {
   try {
+    
     await mongoose.connect(
       process.env.MONGO_URI,
       {

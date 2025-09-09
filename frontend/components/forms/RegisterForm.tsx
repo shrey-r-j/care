@@ -5,8 +5,8 @@ import emailIcon from "@/public/assets/icons/email.svg"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
-import {UserFormValidation} from "@/lib/validation"
+import { email, z } from "zod"
+import {PatientFormValidation, UserFormValidation} from "@/lib/validation"
 
 import {
   Form,
@@ -20,7 +20,7 @@ import axios from "axios"
 import { useRouter } from 'next/navigation'
 import { FormFieldType } from "./PatientForm"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { Doctors, GenderOptions, IdentificationTypes } from "@/constants"
+import { Doctors, GenderOptions, IdentificationTypes, PatientFormDefaultValues } from "@/constants"
 import { Label } from "../ui/label"
 import { SelectItem } from "../ui/select"
 import Image from "next/image"
@@ -33,6 +33,8 @@ const RegisterForm = ()=> {
     const [isLoading,setisLoading] = useState(false)
     const router = useRouter()
     const [User,setUser] = useState("");
+
+
     useEffect(()=>{
         const fetchDetails = async()=>{
             const token = localStorage.getItem("token");
@@ -55,9 +57,10 @@ const RegisterForm = ()=> {
         }
         fetchDetails();
     },[])
-  const form = useForm<z.infer<typeof UserFormValidation>>({
-    resolver: zodResolver(UserFormValidation),
+  const form = useForm<z.infer<typeof PatientFormValidation>>({
+    resolver: zodResolver(PatientFormValidation),
     defaultValues: {
+      ...PatientFormDefaultValues,
       name: "",
       email : "",
       phone : ""
@@ -65,19 +68,51 @@ const RegisterForm = ()=> {
   })
 
   // 2. Define a submit handler.
-  async function onSubmit({name,email,phone}: z.infer<typeof UserFormValidation>) {
+  async function onSubmit(values: z.infer<typeof PatientFormValidation>) {
     setisLoading(true);
      try{
-        const userData = {
-            name,
-            email,
-            phone
+        let fileId: string | null = null;
+        let filePath: string | null = null;
+        if (values.identificationDocument && values.identificationDocument.length > 0) {
+        const formData = new FormData();
+        formData.append("file", values.identificationDocument[0]);
+
+        const uploadRes = await axios.post(
+          "http://localhost:5000/api/upload/upload",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        fileId = uploadRes.data.fileId; // backend should return an id or filename
+        filePath = uploadRes.data.filePath;
+    }
+        const p = {
+          // userId : User,
+          email : values.email,
+          birthDate : new Date(values.birthDate).toISOString(),
+          gender : values.gender,
+          address : values.address,
+          occupation : values.occupation,
+          emergencycontactname : values.emergencyContactName,
+          emergencyContactNumber: values.emergencyContactNumber,
+          insuranceProvider: values.insuranceProvider,
+          insurancePolicyNumber: values.insurancePolicyNumber,
+          allergies: values.allergies,
+          currentMedication: values.currentMedication,
+          familyMedicalHistory: values.familyMedicalHistory,
+          pastMedicalHistory: values.pastMedicalHistory,
+          identificationType: values.identificationType,
+          identificationNumber: values.identificationNumber,
+          identificationDocumentId: fileId,
+          identificationDocumentUrl: filePath,
+          primaryPhyisician: values.primaryPhysician,
+          privacyConsent: values.privacyConsent,
         }
-        const res = await axios.post("http://localhost:3000/api/user/create",userData);
+        const res = await axios.post("http://localhost:5000/api/user/register",p);
         console.log(res.data);
         form.reset();
         if(res){
-            router.push('/patients/registration');
+            router.push(`/patients/${User}/new-appointment`);
             return alert("User created");
         }
     }

@@ -54,7 +54,7 @@ const PatientForm = ()=> {
             email,
             phone
         }
-        const res = await axios.post("http://localhost:3000/api/user/create",userData);
+        const res = await axios.post("http://localhost:5000/api/user/create",userData);
         console.log(res.data);
         form.reset();
         if(res){
