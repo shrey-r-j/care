@@ -32,31 +32,9 @@ const RegisterForm = ()=> {
   // 1. Define your form.
     const [isLoading,setisLoading] = useState(false)
     const router = useRouter()
-    const [User,setUser] = useState("");
 
 
-    useEffect(()=>{
-        const fetchDetails = async()=>{
-            const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Token not found. Please log in.");
-        return;
-      }
-      try {
-        const response = await axios.get("http://localhost:3000/api/user/getUser", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setUser(response.data.user);
-        console.log(User);
-      } catch (error:any) {
-        console.error("Error fetching club details:", error.response?.data?.message || error.message);
-      }
-        }
-        fetchDetails();
-    },[])
+    
   const form = useForm<z.infer<typeof PatientFormValidation>>({
     resolver: zodResolver(PatientFormValidation),
     defaultValues: {
@@ -112,7 +90,7 @@ const RegisterForm = ()=> {
         console.log(res.data);
         form.reset();
         if(res){
-            router.push(`/patients/${User}/new-appointment`);
+            router.push(`/patients/new-appointment`);
             return alert("User created");
         }
     }

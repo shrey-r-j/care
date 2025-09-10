@@ -35,9 +35,9 @@ export const getUser = async (req, res) => {
 
         const user = await Patient.findOne({ email: decoded.email });
         // console.log(user);
-        const ID = user.id;
+        // const ID = user.email
         if (user) {
-            return res.status(200).json({ message: "User found", ID });
+            return res.status(200).json({ message: "User found", user });
         }
 
         return res.status(404).json({ message: "User not found" });
