@@ -35,9 +35,9 @@ export const getUser = async (req, res) => {
 
         const user = await Patient.findOne({ email: decoded.email });
         // console.log(user);
-        // const ID = user.email
+        const ID = user.id
         if (user) {
-            return res.status(200).json({ message: "User found", user });
+            return res.status(200).json({ message: "User found", ID });
         }
 
         return res.status(404).json({ message: "User not found" });
@@ -116,5 +116,32 @@ export const register = async (req, res) => {
   }
 };
 
+export const login = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // check if patient exists
+    const patient = await Patient.findOne({ email });
+    if (!patient) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // generate JWT
+    const token = jwt.sign({ email: patient.email }, process.env.JWT_KEY);
+
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: patient,
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
 
 

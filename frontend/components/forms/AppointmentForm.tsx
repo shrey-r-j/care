@@ -6,7 +6,7 @@ import emailIcon from "@/public/assets/icons/email.svg"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import {UserFormValidation} from "@/lib/validation"
+import {UserFormValidation, getAppointmentSchema} from "@/lib/validation"
 
 import {
   Form
@@ -31,7 +31,8 @@ const AppointForm = ({type} : string)=> {
     const [isLoading,setisLoading] = useState(false)
     const router = useRouter()
     const [User,setUser] = useState(null)
-
+    let AppointmentFormValidation = getAppointmentSchema(type);
+   
     useEffect(()=>{
         const fetchDetails = async()=>{
             const token = localStorage.getItem("token");
@@ -40,50 +41,76 @@ const AppointForm = ({type} : string)=> {
         return;
       }
       try {
-        const response = await axios.get("http://localhost:3000/api/user/getUser", {
+        const response = await axios.get("http://localhost:5000/api/user/getUser", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        setUser(response.data.user);
-        console.log(User);
+        setUser(response.data.ID);
+        // console.log(User);
+        console.log("Fetched User:", response.data.ID);
       } catch (error:any) {
-        console.error("Error fetching club details:", error.response?.data?.message || error.message);
+        console.error("Error fetching user details:", error.response?.data?.message || error.message);
       }
         }
         fetchDetails();
     },[])
 
-    const form = useForm<z.infer<typeof UserFormValidation>>({
-    resolver: zodResolver(UserFormValidation),
+    const form = useForm<z.infer<typeof AppointmentFormValidation>>({
+    resolver: zodResolver(AppointmentFormValidation),
     defaultValues: {
-      name: "",
-      email : "",
-      phone : ""
+      primaryPhysician: "",
+      schedule: new Date(),
+      reason: "",
+      note: "",
+      cancellationReason:""
     },
   })
 
   // 2. Define a submit handler.
-  async function onSubmit({name,email,phone}: z.infer<typeof UserFormValidation>) {
+  async function onSubmit(values: z.infer<typeof AppointmentFormValidation>) {
     setisLoading(true);
+    let status;
+    switch(type){
+      case "schedule" :
+        status = 'scheduled'
+        break;
+      case "cancel" :
+        status = 'cancelled'
+        break;
+      default:
+        status = 'pending'  
+        break;
+    }
      try{
-        const userData = {
-            name,
-            email,
-            phone
+      if(type === "create" && User ){
+        const appointmentData = {
+            userId: User,
+            primaryPhysician: values.primaryPhysician,
+            schedule: new Date(values.schedule),
+            reason: values.reason,
+            note: values.note,
+            status: status
         }
-        const res = await axios.post("http://localhost:5000/api/user/create",userData);
-        console.log(res.data);
+        const res = await axios.post(
+        "http://localhost:5000/api/appointment",
+        appointmentData
+      );
+      if(res){
         form.reset();
-        if(res){
-            router.push('/patients/registration');
-            localStorage.setItem("token",res.data.token);
-            return alert("User created");
-        }
+        router.push(`/patients/new-appointment/success?appointmentId=${res.data.id}`);
+        
+      }
+      console.log("Appointment created:", res.data);
+
+      alert("Appointment created successfully!");
+    } else {
+      alert("User not loaded, please log in again.");
+    }
     }
     catch(error){
-        console.log(error)
+      console.log(error)
     }finally {
   setisLoading(false);
 }
@@ -183,7 +210,7 @@ const AppointForm = ({type} : string)=> {
           )
         }
 
-        <SubmitButton isLoading={isLoading} className={`${type==="cancel" ? 'shad-danger-btn' :'shad-primary-btn' } w-full`}>Get Started</SubmitButton>
+        <SubmitButton isLoading={isLoading} className={`${type==="cancel" ? 'shad-danger-btn' :'shad-primary-btn' } w-full`}>{buttonLabel}</SubmitButton>
       </form>
     </Form>
   )

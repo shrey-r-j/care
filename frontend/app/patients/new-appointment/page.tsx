@@ -20,7 +20,7 @@ export default function Home() {
           <AppointForm 
             type = "create"
           />
-            <p className="justify-items-end text-dark-600 xl:text-left">
+            <p className="copyright mt-10 py-12">
               © 2025 CarePulse
             </p>
             

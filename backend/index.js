@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv"
 import userRoutes from "./routes/user.js"
 import uploadRoutes from "./routes/uploadRoute.js"
+import appointmentRoute from "./routes/appointmentRoute.js"
 import path from "path";
 
 
@@ -14,9 +15,12 @@ const port = 5000 || process.env.port;
 
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded());
+
 app.use('/api/user',userRoutes)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/upload", uploadRoutes);
+app.use('/api/appointment',appointmentRoute);
 
 const connectDB = async () => {
   try {
