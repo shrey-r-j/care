@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import React from 'react'
 
+
 interface StatCardProps {
     type : 'appointments' |'pending' | 'cancelled';
     count: number;
@@ -10,6 +11,8 @@ interface StatCardProps {
 }
 
 const StatCard = ({type,count=0,label,icon}:StatCardProps) => {
+  
+
   return (
     <div
       className={clsx("stat-card", {

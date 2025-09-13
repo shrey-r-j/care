@@ -21,18 +21,31 @@ import {FormFieldType} from "@/components/forms/PatientForm"
 import { Doctors } from "@/constants"
 import { SelectItem } from "../ui/select"
 import Image from "next/image"
+import { Appointment } from "../table/columns"
 
 
 
 
 
-const AppointForm = ({type} : string)=> {
+const AppointForm = ({
+  userId,
+  appointmentId,
+  type = "create",
+  appointment,
+  setOpen,
+}: {
+  userId?: string;
+  appointmentId?: string;
+  type: "create" | "schedule" | "cancel";
+  appointment?: Appointment;
+  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+})=> {
   // 1. Define your form.
     const [isLoading,setisLoading] = useState(false)
     const router = useRouter()
     const [User,setUser] = useState(null)
     let AppointmentFormValidation = getAppointmentSchema(type);
-   
+    
     useEffect(()=>{
         const fetchDetails = async()=>{
             const token = localStorage.getItem("token");
@@ -100,14 +113,59 @@ const AppointForm = ({type} : string)=> {
       if(res){
         form.reset();
         router.push(`/patients/new-appointment/success?appointmentId=${res.data.id}`);
-        
       }
       console.log("Appointment created:", res.data);
 
       alert("Appointment created successfully!");
-    } else {
-      alert("User not loaded, please log in again.");
+    } else if(type === 'schedule'){
+      // if(appointment){
+        console.log("Hi "+type)
+        const appointmentDataUpdate = {
+            appointmentId : appointmentId,
+            userId: userId,
+            schedule: new Date(values.schedule),
+            primaryPhysician: values.primaryPhysician,
+            reason: values.reason,
+            note: values.note,
+            cancellationReason: values.cancellationReason,
+            status: status
+        }
+        const res = await axios.post('http://localhost:5000/api/appointment/update',appointmentDataUpdate);
+        if(res){
+        form.reset();
+        alert('Appointment rescheduled');
+        }
+      // }
+      else{
+        alert('Not found')
+      }
     }
+    else if (type === "cancel") {
+      // CANCEL
+      console.log("Hi "+type)
+      const appointmentDataUpdate = {
+        appointmentId : appointmentId,
+            userId: userId,
+            schedule: new Date(values.schedule),
+            cancellationReason: values.cancellationReason,
+            status: status
+      };
+
+      const res = await axios.post(
+        "http://localhost:5000/api/appointment/update",
+        appointmentDataUpdate
+      );
+
+      if (res) {
+        form.reset();
+        alert("Appointment cancelled");
+        if (setOpen) setOpen(false); // close modal if provided
+      }
+    } 
+
+    else{
+        alert('Not found')
+      }
     }
     catch(error){
       console.log(error)
@@ -187,7 +245,7 @@ const AppointForm = ({type} : string)=> {
           <CustomFormField
             control={form.control}
             fieldType = {FormFieldType.TEXTAREA}
-            name = "notes"
+            name = "note"
             label = "Notes"
             placeholder="Enter notes"
           />
@@ -200,17 +258,31 @@ const AppointForm = ({type} : string)=> {
 
         {
           type === "cancel" &&(
+            <>
+            <CustomFormField
+            fieldType= {FormFieldType.DATE_PICKER}
+            control={form.control}
+            name = "schedule"
+            label="Expected"
+            showTimeSelect
+            dateFormat="MM/dd/yyyy - h:mm aa"
+          />
             <CustomFormField
             control={form.control}
             fieldType = {FormFieldType.TEXTAREA}
             name = "cancellationReason"
             label = "Reason for cancellation"
             placeholder = "Enter reason for cancellation"
-          />
+          /></>
+            
           )
         }
-
-        <SubmitButton isLoading={isLoading} className={`${type==="cancel" ? 'shad-danger-btn' :'shad-primary-btn' } w-full`}>{buttonLabel}</SubmitButton>
+          <SubmitButton
+            isLoading={isLoading}
+            className={`${type === "cancel" ? "shad-danger-btn" : "shad-primary-btn"} w-full`}
+          >
+            {buttonLabel}
+          </SubmitButton>
       </form>
     </Form>
   )

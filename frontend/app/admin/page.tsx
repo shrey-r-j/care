@@ -1,17 +1,40 @@
+"use client"
+import axios from 'axios';
+
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import logo from "@/public/assets/icons/logo-full.svg"
 import StatCard from '@/components/StatCard'
 import appointLogo from '@/public/assets/icons/appointments.svg'
 import pendingLogo from '@/public/assets/icons/pending.svg'
 import cancelLogo from '@/public/assets/icons/cancelled.svg'
+import {DataTable} from '@/components/table/DataTable';
+import { columns, Payment } from '@/components/table/columns';
 
 
 
 
 const Admin = () => {
-  return (
+    const[cnt,setcnt] = useState(null);
+const [appointments, setAppointments] = useState<any[]>([]);
+
+    useEffect(()=>{
+        const fetchDetails = async()=>{
+        try {
+            const res = await axios.get("http://localhost:5000/api/appointment/all");
+            console.log(res.data.appointments);
+            setcnt(res.data.counts)
+            setAppointments(res.data.appointments)
+        } catch (error) {
+            console.log(error);
+        }
+        }
+        fetchDetails()
+    },[]);
+    
+
+    return (
     <div className='mx-auto flex max-w-7xl flex-col space-y-14'>
        <header className='admin-header'>
         <Link href='/' className='cursor-pointer'>
@@ -34,23 +57,28 @@ const Admin = () => {
             <section className='admin-stat'>
                 <StatCard
                     type = "appointments"
-                    count = {5}
+                    count = {cnt?.scheduled}
                     label = "Scheduled appointments"
                     icon = {appointLogo}
                 />
                 <StatCard
                     type = "pending"
-                    count = {5}
+                    count = {cnt?.pending} 
                     label = "Pending appointments"
                     icon = {pendingLogo}
                 />
                 <StatCard
                     type = "cancelled"
-                    count = {5}
+                    count = {cnt?.cancelled}
                     label = "Cancelled appointments"
                     icon = {cancelLogo}
                 />
             </section>
+        <DataTable
+            columns = {columns}
+            data = {appointments}
+            
+        />
         </main>
     </div>
   )
